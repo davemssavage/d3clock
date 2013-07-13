@@ -9,8 +9,8 @@ var fields = [
 ];
 
 var arc = d3.svg.arc()
-    .innerRadius(100)
-    .outerRadius(140)
+    .innerRadius(function(d, i) { return 160-(i*40); })
+    .outerRadius(function(d, i) { return 200-(i*40); })
     .startAngle(0)
     .endAngle(function(d) { return (d.value / d.size) * 2 * Math.PI; });
 
@@ -22,10 +22,33 @@ var svg = d3.select('#clock').append('svg:svg')
     
   // draw time labels
 var text_group = svg.append("svg:g")
-  .attr("class", "text_group");
-  // .attr("transform", function(d, i) { return "translate(" + x(i) + ",0)"; })
+  .attr("class", "text_group")
+  .attr("transform", function(d, i) { return "translate(" + x(1) + ",0)"; })
 
 var identity = function(d) { return d.name; }
+
+String.prototype.paddingLeft = function (paddingValue) {
+   return String(paddingValue + this).slice(-paddingValue.length);
+};
+
+String.prototype.format = function () {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function (match, number) {
+        return typeof args[number] != 'undefined' ? args[number] : match;
+    });
+};
+
+var formattedTime = function(date) {
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var seconds = date.getSeconds();
+
+  hours = hours.toString().paddingLeft("00");
+  minutes = minutes.toString().paddingLeft("00");
+  seconds = seconds.toString().paddingLeft("00");
+
+  return "{0}:{1}:{2}".format(hours, minutes, seconds);
+};
 
 setInterval(function() {
   var now = new Date();
@@ -37,15 +60,14 @@ setInterval(function() {
   var filteredData = fields.filter(function(d) { return d.value; })
   
   text_group.remove()
-  text_group = svg.append("svg:g")
-      .attr("class", "text_group");
+  text_group = svg.append("svg:g");
   
   // draw arcs...
   var path = svg.selectAll("path")
       .data(filteredData, identity);
 
   path.enter().append("svg:path")
-      .attr("transform", function(d, i) { return "translate(" + x(i) + ",0)"; })
+       .attr("transform", function(d, i) { return "translate(" + x(1) + ",0)"; })
     .transition()
       .ease("elastic")
       .duration(750)
@@ -63,25 +85,19 @@ setInterval(function() {
       .remove();
 
   // draw time
-  var timeLabels = text_group.selectAll("time").data(filteredData, identity);
-
-  timeLabels.enter().append("svg:text")
-      .attr("class", "time")
-      .attr("dy", 7)
-      .attr("transform", function(d, i) { return "translate(" + x(i) + ",0)"; })
-      .attr("text-anchor", "middle") // text-align: right
-  
-  // both enter and update    
-  timeLabels
-      .text(function(d, i) { return i == 0 ? d.value : ":" + d.value; });
-      
-  timeLabels.exit().remove()
+  text_group.append("svg:text")
+    .attr("class", "time")
+    .attr("dy", 7)
+    .attr("transform", function(d, i) { return "translate(" + x(1) + ",0)"; })
+    .attr("text-anchor", "middle")
+    .text(formattedTime(now));
+    
 }, 1000);
 
-function arcTween(b) {
+function arcTween(b, p) {
   var i = d3.interpolate({value: b.previous}, b);
   return function(t) {
-    return arc(i(t));
+    return arc(i(t), p);
   };
 }
 
