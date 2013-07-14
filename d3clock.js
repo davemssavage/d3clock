@@ -1,6 +1,19 @@
+(function() {
 var w = 960,
     h = 500,
     x = d3.scale.ordinal().domain(d3.range(3)).rangePoints([0, w], 2);
+
+// add prototypes to String
+String.prototype.paddingLeft = function (paddingValue) {
+   return String(paddingValue + this).slice(-paddingValue.length);
+};
+
+String.prototype.format = function () {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function (match, number) {
+    return typeof args[number] != 'undefined' ? args[number] : match;
+    });
+};
 
 var fields = [
   {name: "hours", value: 0, size: 24},
@@ -17,26 +30,15 @@ var arc = d3.svg.arc()
 var svg = d3.select('#clock').append('svg:svg')
     .attr("width", w)
     .attr("height", h)
-  .append("svg:g")
-    .attr("transform", "translate(0," + (h / 2) + ")");
+    .append("svg:g")
+      .attr("transform", "translate(0," + (h / 2) + ")");
     
-  // draw time labels
+// draw time labels
 var text_group = svg.append("svg:g")
   .attr("class", "text_group")
   .attr("transform", function(d, i) { return "translate(" + x(1) + ",0)"; })
 
 var identity = function(d) { return d.name; }
-
-String.prototype.paddingLeft = function (paddingValue) {
-   return String(paddingValue + this).slice(-paddingValue.length);
-};
-
-String.prototype.format = function () {
-    var args = arguments;
-    return this.replace(/{(\d+)}/g, function (match, number) {
-        return typeof args[number] != 'undefined' ? args[number] : match;
-    });
-};
 
 var formattedTime = function(date) {
   var hours = date.getHours();
@@ -50,9 +52,7 @@ var formattedTime = function(date) {
   return "{0}:{1}:{2}".format(hours, minutes, seconds);
 };
 
-setInterval(function() {
-  var now = new Date();
-
+var displayTime = function(now) {
   fields[0].previous = fields[0].value; fields[0].value = now.getHours();
   fields[1].previous = fields[1].value; fields[1].value = now.getMinutes();
   fields[2].previous = fields[2].value; fields[2].value = now.getSeconds();
@@ -67,11 +67,11 @@ setInterval(function() {
       .data(filteredData, identity);
 
   path.enter().append("svg:path")
-       .attr("transform", function(d, i) { return "translate(" + x(1) + ",0)"; })
-    .transition()
-      .ease("elastic")
-      .duration(750)
-      .attrTween("d", arcTween);
+   .attr("transform", function(d, i) { return "translate(" + x(1) + ",0)"; })
+   .transition()
+    .ease("elastic")
+    .duration(750)
+    .attrTween("d", arcTween);
 
   path.transition()
       .ease("elastic")
@@ -90,9 +90,8 @@ setInterval(function() {
     .attr("dy", 7)
     .attr("transform", function(d, i) { return "translate(" + x(1) + ",0)"; })
     .attr("text-anchor", "middle")
-    .text(formattedTime(now));
-    
-}, 1000);
+    .text(formattedTime(now));	
+}
 
 function arcTween(b, p) {
   var i = d3.interpolate({value: b.previous}, b);
@@ -101,3 +100,8 @@ function arcTween(b, p) {
   };
 }
 
+setInterval(function() {
+  var now = new Date();
+  displayTime(now);
+}, 1000);
+})();
