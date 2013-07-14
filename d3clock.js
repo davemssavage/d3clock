@@ -1,9 +1,8 @@
 (function() {
 var w = 960,
     h = 500,
-    r = 200,
-    t = 40,
-    x = d3.scale.ordinal().domain(d3.range(3)).rangePoints([0, w], 2);
+    r = 225,
+    t = 40;
 
 var fields = [
   {name: "hours", value: 0, size: 24},
@@ -48,7 +47,7 @@ var svg = d3.select('#clock').append('svg:svg')
 // draw time labels
 var text_group = svg.append("svg:g")
   .attr("class", "text_group")
-  .attr("transform", function(d, i) { return "translate(" + x(1) + ",0)"; })
+  .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")scale(.55)" )
 
 // render a date as HH:mm:ss
 var formattedTime = function(date) {
@@ -78,7 +77,7 @@ var displayClock = function(now) {
       .data(filteredData, identity);
 
   path.enter().append("svg:path")
-   .attr("transform", function(d, i) { return "translate(" + x(1) + ",0)"; })
+   .attr("transform", "translate(" + w / 2 + "," + 0 + ")")
    .transition()
     .ease("elastic")
     .duration(750)
@@ -99,7 +98,7 @@ var displayClock = function(now) {
   text_group.append("svg:text")
     .attr("class", "time")
     .attr("dy", 7)
-    .attr("transform", function(d, i) { return "translate(" + x(1) + ",0)"; })
+    .attr("transform", "translate(" + w / 2 + "," + 0 + ")")
     .attr("text-anchor", "middle")
     .text(formattedTime(now));	
 }
