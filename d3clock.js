@@ -40,7 +40,7 @@ var identity = function(d) { return d.name; }
 
 var svg = d3.select('#clock').append('svg:svg')
     .attr("width", w)
-    .attr("height", h)
+    .attr("height", h + 100)
     .append("svg:g")
       .attr("transform", "translate(0," + (h / 2) + ")");
     
@@ -98,10 +98,12 @@ var displayClock = function(now) {
   text_group.append("svg:text")
     .attr("class", "time")
     .attr("dy", 7)
-    .attr("transform", "translate(" + w / 2 + "," + 0 + ")")
+    .attr("transform", "translate(" + w / 2 + "," + h / 2  + ")")
     .attr("text-anchor", "middle")
     .text(formattedTime(now));	
 }
+
+displayClock(new Date());
 
 setInterval(function() {
   var now = new Date();
