@@ -1,7 +1,15 @@
 (function() {
 var w = 960,
     h = 500,
+    r = 200,
+    t = 40,
     x = d3.scale.ordinal().domain(d3.range(3)).rangePoints([0, w], 2);
+
+var fields = [
+  {name: "hours", value: 0, size: 24},
+  {name: "minutes", value: 0, size: 60},
+  {name: "seconds", value: 0, size: 60}
+];
 
 // add prototypes to String
 String.prototype.paddingLeft = function (paddingValue) {
@@ -15,17 +23,21 @@ String.prototype.format = function () {
     });
 };
 
-var fields = [
-  {name: "hours", value: 0, size: 24},
-  {name: "minutes", value: 0, size: 60},
-  {name: "seconds", value: 0, size: 60}
-];
-
+// arc related functions
 var arc = d3.svg.arc()
-    .innerRadius(function(d, i) { return 160-(i*40); })
-    .outerRadius(function(d, i) { return 200-(i*40); })
+    .innerRadius(function(d, i) { return r-((i+1)*t); })
+    .outerRadius(function(d, i) { return r-(i*t); })
     .startAngle(0)
     .endAngle(function(d) { return (d.value / d.size) * 2 * Math.PI; });
+
+function arcTween(time, index) {
+  var interp = d3.interpolate({value: time.previous}, time);
+  return function(t) {
+    return arc(interp(t), index);
+  };
+}
+
+var identity = function(d) { return d.name; }
 
 var svg = d3.select('#clock').append('svg:svg')
     .attr("width", w)
@@ -38,8 +50,7 @@ var text_group = svg.append("svg:g")
   .attr("class", "text_group")
   .attr("transform", function(d, i) { return "translate(" + x(1) + ",0)"; })
 
-var identity = function(d) { return d.name; }
-
+// render a date as HH:mm:ss
 var formattedTime = function(date) {
   var hours = date.getHours();
   var minutes = date.getMinutes();
@@ -52,7 +63,7 @@ var formattedTime = function(date) {
   return "{0}:{1}:{2}".format(hours, minutes, seconds);
 };
 
-var displayTime = function(now) {
+var displayClock = function(now) {
   fields[0].previous = fields[0].value; fields[0].value = now.getHours();
   fields[1].previous = fields[1].value; fields[1].value = now.getMinutes();
   fields[2].previous = fields[2].value; fields[2].value = now.getSeconds();
@@ -93,15 +104,8 @@ var displayTime = function(now) {
     .text(formattedTime(now));	
 }
 
-function arcTween(b, p) {
-  var i = d3.interpolate({value: b.previous}, b);
-  return function(t) {
-    return arc(i(t), p);
-  };
-}
-
 setInterval(function() {
   var now = new Date();
-  displayTime(now);
+  displayClock(now);
 }, 1000);
 })();
