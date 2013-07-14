@@ -2,7 +2,7 @@
 var w = 960,
     h = 500,
     r = 225,
-    t = 40;
+    t = 62;
 
 var fields = [
   {name: "hours", value: 0, size: 24},
